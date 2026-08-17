@@ -28,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.edu.ifsp.scl.sc303500x.trucoscoreboardcompose.ui.theme.TrucoScoreBoardComposeTheme
 
+private const val PONTUACAO_MAXIMA = 12
+private const val MAO_DE_ONZE = 11
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +50,32 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
     var pontosEquipeA by remember { mutableIntStateOf(0) }
     var pontosEquipeB by remember { mutableIntStateOf(0) }
 
+    val jogoFinalizado = pontosEquipeA >= PONTUACAO_MAXIMA || pontosEquipeB >= PONTUACAO_MAXIMA
+
+    val avisoMaoDeOnze = when {
+        jogoFinalizado -> null
+        pontosEquipeA == MAO_DE_ONZE && pontosEquipeB == MAO_DE_ONZE ->
+            "Mão de 11 para as duas equipes!"
+        pontosEquipeA == MAO_DE_ONZE -> "Equipe A entrou na mão de 11!"
+        pontosEquipeB == MAO_DE_ONZE -> "Equipe B entrou na mão de 11!"
+        else -> null
+    }
+
+    val nomeVencedor = when {
+        pontosEquipeA >= PONTUACAO_MAXIMA -> "Equipe A"
+        pontosEquipeB >= PONTUACAO_MAXIMA -> "Equipe B"
+        else -> null
+    }
+
+    fun adicionarPontos(equipe: Char, pontos: Int) {
+        if (jogoFinalizado) return
+        if (equipe == 'A') {
+            pontosEquipeA = (pontosEquipeA + pontos).coerceAtMost(PONTUACAO_MAXIMA)
+        } else {
+            pontosEquipeB = (pontosEquipeB + pontos).coerceAtMost(PONTUACAO_MAXIMA)
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -60,6 +89,26 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
         )
+
+        if (avisoMaoDeOnze != null) {
+            Text(
+                text = avisoMaoDeOnze,
+                color = Color(0xFFFFEB3B),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+
+        if (nomeVencedor != null) {
+            Text(
+                text = "$nomeVencedor venceu a partida!",
+                color = Color(0xFFFF5252),
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
 
         Row(
             modifier = Modifier
@@ -75,8 +124,9 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
                 nomeEquipe = "Equipe A",
                 pontos = pontosEquipeA,
                 corFundo = Color(0xFF2E7D32),
-                onMais1 = { pontosEquipeA += 1 },
-                onMais3 = { pontosEquipeA += 3 }
+                habilitado = !jogoFinalizado,
+                onMais1 = { adicionarPontos('A', 1) },
+                onMais3 = { adicionarPontos('A', 3) }
             )
 
             EquipeCard(
@@ -86,8 +136,9 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
                 nomeEquipe = "Equipe B",
                 pontos = pontosEquipeB,
                 corFundo = Color(0xFF1565C0),
-                onMais1 = { pontosEquipeB += 1 },
-                onMais3 = { pontosEquipeB += 3 }
+                habilitado = !jogoFinalizado,
+                onMais1 = { adicionarPontos('B', 1) },
+                onMais3 = { adicionarPontos('B', 3) }
             )
         }
 
@@ -111,6 +162,7 @@ fun EquipeCard(
     nomeEquipe: String,
     pontos: Int,
     corFundo: Color,
+    habilitado: Boolean,
     onMais1: () -> Unit,
     onMais3: () -> Unit
 ) {
@@ -138,6 +190,7 @@ fun EquipeCard(
 
         Button(
             onClick = onMais1,
+            enabled = habilitado,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp)
@@ -147,6 +200,7 @@ fun EquipeCard(
 
         Button(
             onClick = onMais3,
+            enabled = habilitado,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "+3")
