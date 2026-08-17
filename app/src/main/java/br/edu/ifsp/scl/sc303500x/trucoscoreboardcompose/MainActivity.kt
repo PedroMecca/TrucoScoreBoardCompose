@@ -58,6 +58,8 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
     var nomeEquipeA by remember { mutableStateOf("") }
     var nomeEquipeB by remember { mutableStateOf("") }
     var partidaComecou by remember { mutableStateOf(false) }
+    var partidasVencidasEquipeA by remember { mutableIntStateOf(0) }
+    var partidasVencidasEquipeB by remember { mutableIntStateOf(0) }
 
     val jogoFinalizado = pontosEquipeA >= PONTUACAO_MAXIMA || pontosEquipeB >= PONTUACAO_MAXIMA
 
@@ -82,11 +84,26 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
     fun adicionarPontos(equipe: Char, pontos: Int) {
         if (jogoFinalizado) return
         partidaComecou = true
+
         if (equipe == 'A') {
             pontosEquipeA = (pontosEquipeA + pontos).coerceAtMost(PONTUACAO_MAXIMA)
+            if (pontosEquipeA >= PONTUACAO_MAXIMA) partidasVencidasEquipeA++
         } else {
             pontosEquipeB = (pontosEquipeB + pontos).coerceAtMost(PONTUACAO_MAXIMA)
+            if (pontosEquipeB >= PONTUACAO_MAXIMA) partidasVencidasEquipeB++
         }
+    }
+
+    fun iniciarNovaMao() {
+        pontosEquipeA = 0
+        pontosEquipeB = 0
+        partidaComecou = false
+    }
+
+    fun zerarPlacarDePartidas() {
+        partidasVencidasEquipeA = 0
+        partidasVencidasEquipeB = 0
+        iniciarNovaMao()
     }
 
     Column(
@@ -101,6 +118,13 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
             color = Color.White,
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text = "Partidas: $partidasVencidasEquipeA x $partidasVencidasEquipeB",
+            color = Color(0xCCFFFFFF),
+            fontSize = 16.sp,
+            modifier = Modifier.padding(top = 4.dp)
         )
 
         if (avisoMaoDeOnze != null) {
@@ -159,17 +183,25 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
             )
         }
 
-        Button(
-            onClick = {
-                pontosEquipeA = 0
-                pontosEquipeB = 0
-                partidaComecou = false
-            },
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp)
+                .padding(top = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Reiniciar Partida")
+            Button(
+                onClick = { iniciarNovaMao() },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = "Nova Mão")
+            }
+
+            Button(
+                onClick = { zerarPlacarDePartidas() },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = "Zerar Placar")
+            }
         }
     }
 }
