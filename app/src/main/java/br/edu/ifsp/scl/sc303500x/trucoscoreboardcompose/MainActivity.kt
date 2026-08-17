@@ -11,18 +11,24 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,26 +55,33 @@ class MainActivity : ComponentActivity() {
 fun TrucoScoreBoard(modifier: Modifier = Modifier) {
     var pontosEquipeA by remember { mutableIntStateOf(0) }
     var pontosEquipeB by remember { mutableIntStateOf(0) }
+    var nomeEquipeA by remember { mutableStateOf("") }
+    var nomeEquipeB by remember { mutableStateOf("") }
+    var partidaComecou by remember { mutableStateOf(false) }
 
     val jogoFinalizado = pontosEquipeA >= PONTUACAO_MAXIMA || pontosEquipeB >= PONTUACAO_MAXIMA
+
+    val nomeExibidoA = nomeEquipeA.ifBlank { "Equipe A" }
+    val nomeExibidoB = nomeEquipeB.ifBlank { "Equipe B" }
 
     val avisoMaoDeOnze = when {
         jogoFinalizado -> null
         pontosEquipeA == MAO_DE_ONZE && pontosEquipeB == MAO_DE_ONZE ->
-            "Mão de 11 para as duas equipes!"
-        pontosEquipeA == MAO_DE_ONZE -> "Equipe A entrou na mão de 11!"
-        pontosEquipeB == MAO_DE_ONZE -> "Equipe B entrou na mão de 11!"
+            "Mão de 11 para $nomeExibidoA e $nomeExibidoB!"
+        pontosEquipeA == MAO_DE_ONZE -> "$nomeExibidoA entrou na mão de 11!"
+        pontosEquipeB == MAO_DE_ONZE -> "$nomeExibidoB entrou na mão de 11!"
         else -> null
     }
 
     val nomeVencedor = when {
-        pontosEquipeA >= PONTUACAO_MAXIMA -> "Equipe A"
-        pontosEquipeB >= PONTUACAO_MAXIMA -> "Equipe B"
+        pontosEquipeA >= PONTUACAO_MAXIMA -> nomeExibidoA
+        pontosEquipeB >= PONTUACAO_MAXIMA -> nomeExibidoB
         else -> null
     }
 
     fun adicionarPontos(equipe: Char, pontos: Int) {
         if (jogoFinalizado) return
+        partidaComecou = true
         if (equipe == 'A') {
             pontosEquipeA = (pontosEquipeA + pontos).coerceAtMost(PONTUACAO_MAXIMA)
         } else {
@@ -121,7 +134,9 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxSize(),
-                nomeEquipe = "Equipe A",
+                nomeEquipe = nomeEquipeA,
+                onNomeChange = { nomeEquipeA = it },
+                nomeTravado = partidaComecou,
                 pontos = pontosEquipeA,
                 corFundo = Color(0xFF2E7D32),
                 habilitado = !jogoFinalizado,
@@ -133,7 +148,9 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxSize(),
-                nomeEquipe = "Equipe B",
+                nomeEquipe = nomeEquipeB,
+                onNomeChange = { nomeEquipeB = it },
+                nomeTravado = partidaComecou,
                 pontos = pontosEquipeB,
                 corFundo = Color(0xFF1565C0),
                 habilitado = !jogoFinalizado,
@@ -146,6 +163,7 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
             onClick = {
                 pontosEquipeA = 0
                 pontosEquipeB = 0
+                partidaComecou = false
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -160,6 +178,8 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
 fun EquipeCard(
     modifier: Modifier = Modifier,
     nomeEquipe: String,
+    onNomeChange: (String) -> Unit,
+    nomeTravado: Boolean,
     pontos: Int,
     corFundo: Color,
     habilitado: Boolean,
@@ -173,11 +193,29 @@ fun EquipeCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(
-            text = nomeEquipe,
-            color = Color.White,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+        OutlinedTextField(
+            value = nomeEquipe,
+            onValueChange = onNomeChange,
+            enabled = !nomeTravado,
+            placeholder = { Text("Nome da equipe") },
+            singleLine = true,
+            textStyle = androidx.compose.ui.text.TextStyle(
+                textAlign = TextAlign.Center,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            ),
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Words
+            ),
+            colors = TextFieldDefaults.colors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                disabledTextColor = Color.White,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
 
         Text(
