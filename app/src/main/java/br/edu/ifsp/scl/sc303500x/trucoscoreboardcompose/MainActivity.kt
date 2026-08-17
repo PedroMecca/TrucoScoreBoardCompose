@@ -15,6 +15,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,6 +44,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TrucoScoreBoard(modifier: Modifier = Modifier) {
+    var pontosEquipeA by remember { mutableIntStateOf(0) }
+    var pontosEquipeB by remember { mutableIntStateOf(0) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -66,8 +73,10 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
                     .weight(1f)
                     .fillMaxSize(),
                 nomeEquipe = "Equipe A",
-                pontos = 0,
-                corFundo = Color(0xFF2E7D32)
+                pontos = pontosEquipeA,
+                corFundo = Color(0xFF2E7D32),
+                onMais1 = { pontosEquipeA += 1 },
+                onMais3 = { pontosEquipeA += 3 }
             )
 
             EquipeCard(
@@ -75,13 +84,18 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
                     .weight(1f)
                     .fillMaxSize(),
                 nomeEquipe = "Equipe B",
-                pontos = 0,
-                corFundo = Color(0xFF1565C0)
+                pontos = pontosEquipeB,
+                corFundo = Color(0xFF1565C0),
+                onMais1 = { pontosEquipeB += 1 },
+                onMais3 = { pontosEquipeB += 3 }
             )
         }
 
         Button(
-            onClick = { /* ainda sem ação */ },
+            onClick = {
+                pontosEquipeA = 0
+                pontosEquipeB = 0
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)
@@ -96,7 +110,9 @@ fun EquipeCard(
     modifier: Modifier = Modifier,
     nomeEquipe: String,
     pontos: Int,
-    corFundo: Color
+    corFundo: Color,
+    onMais1: () -> Unit,
+    onMais3: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -120,8 +136,20 @@ fun EquipeCard(
             modifier = Modifier.padding(vertical = 16.dp)
         )
 
-        Button(onClick = { /* Ainda não faz nada */ }) {
+        Button(
+            onClick = onMais1,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+        ) {
             Text(text = "+1")
+        }
+
+        Button(
+            onClick = onMais3,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "+3")
         }
     }
 }
