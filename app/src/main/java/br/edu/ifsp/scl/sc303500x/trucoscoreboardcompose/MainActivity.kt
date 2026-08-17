@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.edu.ifsp.scl.sc303500x.trucoscoreboardcompose.ui.theme.TrucoScoreBoardComposeTheme
 
+//constantes
 private const val PONTUACAO_MAXIMA = 12
 private const val MAO_DE_ONZE = 11
 
@@ -140,7 +141,7 @@ fun TrucoScoreBoard(modifier: Modifier = Modifier) {
         if (nomeVencedor != null) {
             Text(
                 text = "$nomeVencedor venceu a partida!",
-                color = Color(0xFFFF5252),
+                color = Color(0xFF00FFC4),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)
